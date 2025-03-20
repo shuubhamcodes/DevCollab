@@ -96,6 +96,7 @@ function Home() {
   const [selectedExperienceLevel, setSelectedExperienceLevel] = useState('');
   const [sortOption, setSortOption] = useState('dateAdded');
   const [filteredProjects, setFilteredProjects] = useState(allProjects);
+  const [projectViews, setProjectViews] = useState({});
 
   // Available categories and experience levels
   const categories = ['Web', 'AI', 'Blockchain', 'Mobile', 'Game'];
@@ -107,6 +108,14 @@ function Home() {
     { value: 'popularityScoreAsc', label: 'Popularity (Lowest)' },
     { value: 'experienceLevel', label: 'Experience Level' }
   ];
+
+  // Handle view details click
+  const handleViewDetails = (projectId) => {
+    setProjectViews(prev => ({
+      ...prev,
+      [projectId]: (prev[projectId] || 0) + 1
+    }));
+  };
 
   // Filter and sort projects when any filter changes
   useEffect(() => {
@@ -285,7 +294,14 @@ function Home() {
           {filteredProjects.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProjects.map(project => (
-                <ProjectCard key={project.id} project={project} />
+                <ProjectCard
+                  key={project.id}
+                  project={{
+                    ...project,
+                    viewsCount: (projectViews[project.id] || 0) + project.viewsCount
+                  }}
+                  onViewDetails={handleViewDetails}
+                />
               ))}
             </div>
           ) : (

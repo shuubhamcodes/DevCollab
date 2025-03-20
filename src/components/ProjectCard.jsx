@@ -1,7 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-function ProjectCard({ project }) {
+function ProjectCard({ project, onViewDetails }) {
   const [isFavorite, setIsFavorite] = useState(false)
+  
+  useEffect(() => {
+    // Check if project is in favorites on mount
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
+    setIsFavorite(favorites.some(fav => fav.id === project.id))
+  }, [project.id])
   
   // Category background colors
   const categoryColors = {
@@ -37,6 +43,16 @@ function ProjectCard({ project }) {
   }
 
   const toggleFavorite = () => {
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
+    let newFavorites
+    
+    if (isFavorite) {
+      newFavorites = favorites.filter(fav => fav.id !== project.id)
+    } else {
+      newFavorites = [...favorites, project]
+    }
+    
+    localStorage.setItem('favorites', JSON.stringify(newFavorites))
     setIsFavorite(!isFavorite)
   }
 
@@ -59,17 +75,13 @@ function ProjectCard({ project }) {
         </div>
         <button 
           onClick={toggleFavorite}
-          className="text-gray-400 hover:text-yellow-500 dark:text-gray-500 dark:hover:text-yellow-400 transition-colors"
+          className="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           {isFavorite ? (
-            <svg className="w-6 h-6 fill-current text-yellow-500" viewBox="0 0 24 24">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-            </svg>
+            <span className="text-2xl">❤️</span>
           ) : (
-            <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-            </svg>
+            <span className="text-2xl">🤍</span>
           )}
         </button>
       </div>
@@ -127,12 +139,17 @@ function ProjectCard({ project }) {
             <span>{project.popularityScore} popularity</span>
           </div>
         </div>
+
+        {/* View Details Button */}
+        <button
+          onClick={() => onViewDetails(project.id)}
+          className="w-full mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+        >
+          View Details
+        </button>
       </div>
     </div>
   )
 }
 
 export default ProjectCard
-
-
-
