@@ -43,6 +43,27 @@ function ProjectCard({ project, comments = [], onAddComment, onViewDetails }) {
     })
   }
 
+  // Check if project is new (within last 7 days)
+  const isNew = () => {
+    const projectDate = new Date(project.dateAdded)
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    return projectDate >= sevenDaysAgo
+  }
+
+  // Check if project is popular
+  const isPopular = () => {
+    return project.viewsCount > 1000 || project.popularityScore > 80
+  }
+
+  // Check if project has top skills
+  const hasTopSkills = () => {
+    const topSkills = ['react', 'web3', 'ai']
+    return project.tags.some(tag => 
+      topSkills.includes(tag.toLowerCase())
+    )
+  }
+
   const toggleFavorite = () => {
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
     let newFavorites
@@ -73,31 +94,52 @@ function ProjectCard({ project, comments = [], onAddComment, onViewDetails }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
       {/* Card Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-start">
-        <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 rounded-full overflow-hidden">
-            <img 
-              src={project.profilePicture} 
-              alt={`${project.ownerName}'s profile`}
-              className="h-full w-full object-cover"
-            />
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex items-center space-x-3">
+            <div className="h-10 w-10 rounded-full overflow-hidden">
+              <img 
+                src={project.profilePicture} 
+                alt={`${project.ownerName}'s profile`}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900 dark:text-white text-lg">{project.name}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">by {project.ownerName}</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-gray-900 dark:text-white text-lg">{project.name}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">by {project.ownerName}</p>
-          </div>
+          <button 
+            onClick={toggleFavorite}
+            className="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            {isFavorite ? (
+              <span className="text-2xl">❤️</span>
+            ) : (
+              <span className="text-2xl">🤍</span>
+            )}
+          </button>
         </div>
-        <button 
-          onClick={toggleFavorite}
-          className="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
-          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-        >
-          {isFavorite ? (
-            <span className="text-2xl">❤️</span>
-          ) : (
-            <span className="text-2xl">🤍</span>
+
+        {/* Badges */}
+        <div className="flex flex-wrap gap-2">
+          {isNew() && (
+            <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs font-medium flex items-center">
+              🆕 New
+            </span>
           )}
-        </button>
+          {isPopular() && (
+            <span className="px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-full text-xs font-medium flex items-center">
+              🔥 Popular
+            </span>
+          )}
+          {hasTopSkills() && (
+            <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-medium flex items-center">
+              💡 Top Skill
+            </span>
+          )}
+        </div>
       </div>
       
       {/* Card Body */}
