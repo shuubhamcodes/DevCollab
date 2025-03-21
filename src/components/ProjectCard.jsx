@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 
-function ProjectCard({ project, onViewDetails }) {
+function ProjectCard({ project, comments = [], onAddComment, onViewDetails }) {
   const [isFavorite, setIsFavorite] = useState(false)
+  const [newComment, setNewComment] = useState('')
   
   useEffect(() => {
     // Check if project is in favorites on mount
@@ -54,6 +55,19 @@ function ProjectCard({ project, onViewDetails }) {
     
     localStorage.setItem('favorites', JSON.stringify(newFavorites))
     setIsFavorite(!isFavorite)
+  }
+
+  const handleSubmitComment = (e) => {
+    e.preventDefault()
+    if (newComment.trim()) {
+      onAddComment({
+        id: Date.now(),
+        text: newComment,
+        date: new Date().toISOString(),
+        author: 'Anonymous User' // Could be replaced with actual user data
+      })
+      setNewComment('')
+    }
   }
 
   return (
@@ -147,6 +161,48 @@ function ProjectCard({ project, onViewDetails }) {
         >
           View Details
         </button>
+
+        {/* Comments Section */}
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Comments ({comments.length})
+          </h4>
+          
+          {/* Add Comment Form */}
+          <form onSubmit={handleSubmitComment} className="mb-6">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              className="w-full px-3 py-2 text-gray-700 dark:text-gray-300 border rounded-lg focus:outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:focus:border-blue-500"
+              rows="3"
+            />
+            <button
+              type="submit"
+              disabled={!newComment.trim()}
+              className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              Add Comment
+            </button>
+          </form>
+          
+          {/* Comments List */}
+          <div className="space-y-4">
+            {comments.map(comment => (
+              <div key={comment.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {comment.author}
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {formatDate(comment.date)}
+                  </span>
+                </div>
+                <p className="text-gray-700 dark:text-gray-300">{comment.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )

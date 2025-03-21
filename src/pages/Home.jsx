@@ -335,7 +335,7 @@ function Home() {
                   />
                 ))}
               </div>
-
+              
               {/* Pagination Controls */}
               <div className="flex justify-center items-center space-x-4 mt-8">
                 <button
