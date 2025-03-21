@@ -97,6 +97,15 @@ function Home() {
   const [sortOption, setSortOption] = useState('dateAdded');
   const [filteredProjects, setFilteredProjects] = useState(allProjects);
   const [projectViews, setProjectViews] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [projectComments, setProjectComments] = useState({});
+
+  // Pagination settings
+  const projectsPerPage = 5;
+  const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+  const startIndex = (currentPage - 1) * projectsPerPage;
+  const endIndex = startIndex + projectsPerPage;
+  const currentProjects = filteredProjects.slice(startIndex, endIndex);
 
   // Available categories and experience levels
   const categories = ['Web', 'AI', 'Blockchain', 'Mobile', 'Game'];
@@ -114,6 +123,14 @@ function Home() {
     setProjectViews(prev => ({
       ...prev,
       [projectId]: (prev[projectId] || 0) + 1
+    }));
+  };
+
+  // Handle adding comments
+  const handleAddComment = (projectId, comment) => {
+    setProjectComments(prev => ({
+      ...prev,
+      [projectId]: [...(prev[projectId] || []), comment]
     }));
   };
 
@@ -145,6 +162,7 @@ function Home() {
     result = sortProjects(result, sortOption);
     
     setFilteredProjects(result);
+    setCurrentPage(1); // Reset to first page when filters change
   }, [searchTerm, selectedCategory, selectedExperienceLevel, sortOption]);
 
   // Sort projects based on selected option
@@ -174,6 +192,16 @@ function Home() {
     setSelectedCategory('');
     setSelectedExperienceLevel('');
     setSortOption('dateAdded');
+    setCurrentPage(1);
+  };
+
+  // Pagination controls
+  const handlePreviousPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
   };
 
   // SearchBar component
@@ -292,18 +320,51 @@ function Home() {
           </div>
           
           {filteredProjects.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProjects.map(project => (
-                <ProjectCard
-                  key={project.id}
-                  project={{
-                    ...project,
-                    viewsCount: (projectViews[project.id] || 0) + project.viewsCount
-                  }}
-                  onViewDetails={handleViewDetails}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 gap-6">
+                {currentProjects.map(project => (
+                  <ProjectCard
+                    key={project.id}
+                    project={{
+                      ...project,
+                      viewsCount: (projectViews[project.id] || 0) + project.viewsCount
+                    }}
+                    comments={projectComments[project.id] || []}
+                    onAddComment={(comment) => handleAddComment(project.id, comment)}
+                    onViewDetails={handleViewDetails}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="flex justify-center items-center space-x-4 mt-8">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 rounded-lg ${
+                    currentPage === 1
+                      ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  } text-white transition-colors duration-200`}
+                >
+                  Previous
+                </button>
+                <span className="text-gray-700 dark:text-gray-300">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`px-4 py-2 rounded-lg ${
+                    currentPage === totalPages
+                      ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  } text-white transition-colors duration-200`}
+                >
+                  Next
+                </button>
+              </div>
+            </>
           ) : (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
               <p className="text-gray-600 dark:text-gray-400">
